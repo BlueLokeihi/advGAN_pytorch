@@ -3,6 +3,7 @@ import torch.nn.functional as F
 
 
 # Target Model definition
+# 一个简单的分类器，输入为MNIST图片，输出为0-9的分类
 class MNIST_target_net(nn.Module):
     def __init__(self):
         super(MNIST_target_net, self).__init__()
@@ -45,9 +46,10 @@ class Discriminator(nn.Module):
             nn.Conv2d(16, 32, kernel_size=4, stride=2, padding=0, bias=True),
             nn.BatchNorm2d(32),
             nn.LeakyReLU(0.2),
+            # 32*1*1
             nn.Conv2d(32, 1, 1),
             nn.Sigmoid()
-            # 32*1*1
+            # 1*1*1
         ]
         self.model = nn.Sequential(*model)
 
@@ -85,6 +87,7 @@ class Generator(nn.Module):
                        ResnetBlock(32),]
 
         decoder_lis = [
+            # state size. 32 x 5 x 5
             nn.ConvTranspose2d(32, 16, kernel_size=3, stride=2, padding=0, bias=False),
             nn.InstanceNorm2d(16),
             nn.ReLU(),
@@ -95,7 +98,7 @@ class Generator(nn.Module):
             # state size. 8 x 23 x 23
             nn.ConvTranspose2d(8, image_nc, kernel_size=6, stride=1, padding=0, bias=False),
             nn.Tanh()
-            # state size. image_nc x 28 x 28
+            # state size. image_nc x 28 x 28，输出范围-1 ~ +1
         ]
 
         self.encoder = nn.Sequential(*encoder_lis)

@@ -23,25 +23,26 @@ if __name__ == "__main__":
     target_model.train()
     opt_model = torch.optim.Adam(target_model.parameters(), lr=0.001)
     epochs = 40
-    for epoch in range(epochs):
-        loss_epoch = 0
-        if epoch == 20:
-            opt_model = torch.optim.Adam(target_model.parameters(), lr=0.0001)
-        for i, data in enumerate(train_dataloader, 0):
-            train_imgs, train_labels = data
-            train_imgs, train_labels = train_imgs.to(device), train_labels.to(device)
-            logits_model = target_model(train_imgs)
-            loss_model = F.cross_entropy(logits_model, train_labels)
-            loss_epoch += loss_model
-            opt_model.zero_grad()
-            loss_model.backward()
-            opt_model.step()
-
-        print('loss in epoch %d: %f' % (epoch, loss_epoch.item()))
+    # for epoch in range(epochs):
+    #     loss_epoch = 0
+    #     if epoch == 20:
+    #         opt_model = torch.optim.Adam(target_model.parameters(), lr=0.0001)
+    #     for i, data in enumerate(train_dataloader, 0):
+    #         train_imgs, train_labels = data
+    #         train_imgs, train_labels = train_imgs.to(device), train_labels.to(device)
+    #         logits_model = target_model(train_imgs)
+    #         loss_model = F.cross_entropy(logits_model, train_labels)  # F.cross_entropy自动计算softmax，自动转换为one-hot编码
+    #         loss_epoch += loss_model
+    #         opt_model.zero_grad()
+    #         loss_model.backward()
+    #         opt_model.step()
+    #
+    #     print('loss in epoch %d: %f' % (epoch, loss_epoch.item()))
 
     # save model
     targeted_model_file_name = './MNIST_target_model.pth'
-    torch.save(target_model.state_dict(), targeted_model_file_name)
+    target_model.load_state_dict(torch.load(targeted_model_file_name))
+    # torch.save(target_model.state_dict(), targeted_model_file_name)
     target_model.eval()
 
     # MNIST test dataset

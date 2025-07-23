@@ -3,7 +3,7 @@ import torchvision.datasets
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
-from models import  MNIST_target_net
+from models import Resnet18_MNIST
 
 
 if __name__ == "__main__":
@@ -19,7 +19,7 @@ if __name__ == "__main__":
     train_dataloader = DataLoader(mnist_dataset, batch_size=batch_size, shuffle=False, num_workers=1)
 
     # training the target model
-    target_model = MNIST_target_net().to(device)
+    target_model = Resnet18_MNIST().model.to(device)
     target_model.train()
     opt_model = torch.optim.Adam(target_model.parameters(), lr=0.001)
     epochs = 40

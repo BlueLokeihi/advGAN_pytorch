@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision
 
 
 # Target Model definition
@@ -29,6 +30,14 @@ class MNIST_target_net(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.logits(x)
         return x
+
+
+class Resnet18_MNIST:
+    def __init__(self, out_features=10, pretrained=False):
+        self.model = torchvision.models.resnet18(pretrained=pretrained)
+        self.model.conv1 = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, stride=1, padding=1, bias=True)
+        self.model.maxpool = nn.Identity()
+        self.model.fc = nn.Linear(self.model.fc.in_features, out_features)
 
 
 class Discriminator(nn.Module):

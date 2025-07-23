@@ -6,6 +6,9 @@ import torch.nn.functional as F
 import torchvision
 import os
 from torchvision.utils import save_image
+import matplotlib.pyplot as plt
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+
 models_path = './models/'
 
 
@@ -51,6 +54,13 @@ class AdvGAN_Attack:
                                             lr=0.001)
         self.optimizer_D = torch.optim.Adam(self.netDisc.parameters(),
                                             lr=0.001)
+
+        # 初始化损失值列表
+        self.loss_D_list = []
+        self.loss_G_fake_list = []
+        self.loss_perturb_list = []
+        self.loss_adv_list = []
+        self.loss_neural_list = []
 
         if not os.path.exists(models_path):
             os.makedirs(models_path)
@@ -186,6 +196,7 @@ class AdvGAN_Attack:
                 loss_adv_sum += loss_adv_batch
                 loss_neural_sum += loss_neural_batch
 
+
             # print statistics
             num_batch = len(train_dataloader)
             print("epoch %d:\nloss_D: %.3f, loss_G_fake: %.3f,\
@@ -193,10 +204,84 @@ class AdvGAN_Attack:
                   (epoch, loss_D_sum/num_batch, loss_G_fake_sum/num_batch,
                    loss_perturb_sum/num_batch, loss_adv_sum/num_batch, loss_neural_sum/num_batch))
 
+            # 保存每个 epoch 的平均损失值
+            self.loss_D_list.append(loss_D_sum / num_batch)
+            self.loss_G_fake_list.append(loss_G_fake_sum / num_batch)
+            self.loss_perturb_list.append(loss_perturb_sum / num_batch)
+            self.loss_adv_list.append(loss_adv_sum / num_batch)
+            self.loss_neural_list.append(loss_neural_sum / num_batch)
+
             # save generator
             if epoch%20==0:
                 netG_file_name = models_path + 'neu_netG_epoch_' + str(epoch) + '.pth'
                 torch.save(self.netG.state_dict(), netG_file_name)
+
+        self.plot_individual_losses(self.loss_D_list, self.loss_G_fake_list, self.loss_perturb_list, self.loss_adv_list,
+                                    self.loss_neural_list)
+
+
+    def plot_individual_losses(self, loss_D_list, loss_G_fake_list, loss_perturb_list, loss_adv_list, loss_neural_list):
+        epochs = range(1, len(loss_D_list) + 1)
+
+        os.makedirs(os.path.join('.', 'loss_plot'), exist_ok=True)
+        image_path = './loss_plot/'
+
+        # Discriminator Loss
+        plt.figure(figsize=(12, 8))
+        plt.plot(epochs, loss_D_list, label='Discriminator Loss', color='red')
+        plt.title('Discriminator Loss')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss Value')
+        plt.legend()
+        plt.grid(True)  # 网格线
+
+        plt.savefig(image_path + 'discriminator_loss.png')
+        plt.close()
+
+        # Generator Fake Loss
+        plt.figure(figsize=(12, 8))
+        plt.plot(epochs, loss_G_fake_list, label='Generator Fake Loss', color='blue')
+        plt.title('Generator Fake Loss')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss Value')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(image_path + 'generator_fake_loss.png')
+        plt.close()
+
+        # Perturbation Loss
+        plt.figure(figsize=(12, 8))
+        plt.plot(epochs, loss_perturb_list, label='Perturbation Loss', color='green')
+        plt.title('Perturbation Loss During Training')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss Value')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(image_path + 'perturbation_loss.png')
+        plt.close()
+
+        # Adversarial Loss
+        plt.figure(figsize=(12, 8))
+        plt.plot(epochs, loss_adv_list, label='Adversarial Loss', color='purple')
+        plt.title('Adversarial Loss')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss Value')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(image_path + 'adversarial_loss.png')
+        plt.close()
+
+        # Neural Loss
+        plt.figure(figsize=(12, 8))
+        plt.plot(epochs, loss_neural_list, label='Neural Loss', color='orange')
+        plt.title('Neural Loss')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss Value')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(image_path + 'neural_loss.png')
+        plt.close()
+
 
 
 # def calculate_neural_loss_direct(perturbed_images, target_model, threshold=0.5, eps=1e-6):

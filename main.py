@@ -3,11 +3,11 @@ import torchvision.datasets
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from advGAN import AdvGAN_Attack
-from models import MNIST_target_net
+from models import Resnet18_MNIST
 
 use_cuda=True
 image_nc=1
-epochs = 60
+epochs = 20
 batch_size = 128
 BOX_MIN = 0
 BOX_MAX = 1
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     device = torch.device("cuda" if (use_cuda and torch.cuda.is_available()) else "cpu")
 
     pretrained_model = "./MNIST_target_model.pth"
-    targeted_model = MNIST_target_net().to(device)
+    targeted_model = Resnet18_MNIST().model.to(device)
     targeted_model.load_state_dict(torch.load(pretrained_model))
     targeted_model.eval()
     model_num_labels = 10
